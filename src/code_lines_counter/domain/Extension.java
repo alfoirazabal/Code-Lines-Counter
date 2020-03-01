@@ -5,6 +5,7 @@
  */
 package code_lines_counter.domain;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -43,14 +44,13 @@ public class Extension implements KnownExtensions {
     }
     
     public static ArrayList<Extension>getFoundExtensionsInFiles(
-            String[] filePaths
+            ArrayList<File> files
     ) {
         ArrayList<Extension> extensions = new ArrayList<>();
         ArrayList<String> extensionsAdded = new ArrayList<>();
-        for(String filePath : filePaths) {
-            String theExtension = filePath.substring(
-                    filePath.lastIndexOf(".") + 1
-            ).toLowerCase();
+        files.stream().map((filePath) -> filePath.getName().substring(
+                filePath.getName().lastIndexOf(".") + 1
+        ).toLowerCase()).forEachOrdered((theExtension) -> {
             for(Extension currExt : KNOWN_CODE_EXTENSIONS) {
                 if(currExt.getExtension().toLowerCase().equals(theExtension)) {
                     if(!extensionsAdded.contains(theExtension)) {
@@ -59,7 +59,7 @@ public class Extension implements KnownExtensions {
                     }
                 }
             }
-        }
+        });
         return extensions;
     }
     

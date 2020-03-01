@@ -5,18 +5,32 @@
  */
 package code_lines_counter.gui;
 
+import code_lines_counter.domain.Extension;
+import java.io.File;
+import java.util.ArrayList;
+import javax.swing.DefaultListModel;
+
 /**
  *
  * @author Alfonso
  */
 public class FormMain extends javax.swing.JFrame {
 
+    private final ArrayList<File> filesInFolder;
+    private ArrayList<Extension> currentExtensions;
+    
     /**
      * Creates new form FormMain
      */
     public FormMain() {
         initComponents();
-        lblCodeFolder.setText(null);
+        
+        this.filesInFolder = new ArrayList<>();
+        this.currentExtensions = new ArrayList<>();
+        
+        this.lblCodeFolder.setText(null);
+        
+        pickFolderAndAssignFiles("C:\\Programming\\NodeJS JS HTML5 Canvas Games");
     }
 
     /**
@@ -68,25 +82,25 @@ public class FormMain extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnSelectCodeFolder)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblCodeFolder))
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(btnAdd)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnSelectCodeFolder)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnModify)
+                                .addComponent(lblCodeFolder))
+                            .addComponent(jLabel1)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                        .addComponent(btnAdd)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnModify)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnDelete)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnDelete)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(257, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnCalculateStats, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(btnCalculateStats, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -107,14 +121,60 @@ public class FormMain extends javax.swing.JFrame {
                     .addComponent(btnAdd)
                     .addComponent(btnModify)
                     .addComponent(btnDelete))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnCalculateStats)
-                .addContainerGap())
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void pickFolderAndAssignFiles(String folderSource) {
+        this.filesInFolder.clear();
+        getFilesRecursively(new File(folderSource));
+        this.currentExtensions = 
+                Extension.getFoundExtensionsInFiles(this.filesInFolder);
+        DefaultListModel fifListModel = new DefaultListModel();
+        fifListModel.addAll(this.currentExtensions);
+        this.lstCodeExtensions.setModel(fifListModel);
+        this.lblCodeFolder.setText(folderSource);
+        addNOfFilesForEachExtension();
+    }
+    
+    private void getFilesRecursively(File directory) {
+        File[] filesAndDirs = directory.listFiles();
+        
+        for(File fileOrDir : filesAndDirs) {
+            if (fileOrDir.isDirectory()) {
+                getFilesRecursively(fileOrDir);
+            } else {
+                System.out.println("ADD: " + fileOrDir);
+                this.filesInFolder.add(fileOrDir);
+            }
+        }
+    }
+    
+    private void addNOfFilesForEachExtension() {
+        ArrayList<Short> nOfFiles = new ArrayList<>();
+        for(short i = 0 ; i < this.currentExtensions.size() ; i++) {
+            String currentExtensionLC = 
+                    this.currentExtensions.get(i).getExtension().toLowerCase();
+            nOfFiles.add((short)0);
+            for(File file : this.filesInFolder) {
+                String fileName = file.getName();
+                String fileExtension = fileName.substring(
+                        fileName.lastIndexOf(".") + 1
+                );
+                if(currentExtensionLC.equals(fileExtension.toLowerCase())) {
+                    nOfFiles.set(i, (short)(nOfFiles.get(i) + 1));
+                }
+            }
+        }
+        DefaultListModel lcfnListModel = new DefaultListModel();
+        lcfnListModel.addAll(nOfFiles);
+        this.lstCodeFilesNumber.setModel(lcfnListModel);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnCalculateStats;
