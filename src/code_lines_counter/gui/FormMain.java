@@ -9,6 +9,7 @@ import code_lines_counter.domain.Extension;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -17,6 +18,7 @@ import javax.swing.DefaultListModel;
 public class FormMain extends javax.swing.JFrame {
 
     private final ArrayList<File> filesInFolder;
+    private final ArrayList<File> codeFilesInFolder;
     private ArrayList<Extension> currentExtensions;
     
     /**
@@ -27,10 +29,10 @@ public class FormMain extends javax.swing.JFrame {
         
         this.filesInFolder = new ArrayList<>();
         this.currentExtensions = new ArrayList<>();
+        this.codeFilesInFolder = new ArrayList<>();
         
         this.lblCodeFolder.setText(null);
         
-        pickFolderAndAssignFiles("C:\\Programming\\NodeJS JS HTML5 Canvas Games");
     }
 
     /**
@@ -57,6 +59,11 @@ public class FormMain extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         btnSelectCodeFolder.setText("Select Code Folder");
+        btnSelectCodeFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSelectCodeFolderActionPerformed(evt);
+            }
+        });
 
         lblCodeFolder.setText("lblCodeFolder");
 
@@ -129,8 +136,20 @@ public class FormMain extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnSelectCodeFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectCodeFolderActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select main folder");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false); //No "All Files" Option
+        if(chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            String choosenDirectory = chooser.getCurrentDirectory().toString();
+            pickFolderAndAssignFiles(choosenDirectory);
+        }
+    }//GEN-LAST:event_btnSelectCodeFolderActionPerformed
+
     private void pickFolderAndAssignFiles(String folderSource) {
         this.filesInFolder.clear();
+        this.codeFilesInFolder.clear();
         getFilesRecursively(new File(folderSource));
         this.currentExtensions = 
                 Extension.getFoundExtensionsInFiles(this.filesInFolder);
@@ -144,12 +163,14 @@ public class FormMain extends javax.swing.JFrame {
     private void getFilesRecursively(File directory) {
         File[] filesAndDirs = directory.listFiles();
         
-        for(File fileOrDir : filesAndDirs) {
-            if (fileOrDir.isDirectory()) {
-                getFilesRecursively(fileOrDir);
-            } else {
-                System.out.println("ADD: " + fileOrDir);
-                this.filesInFolder.add(fileOrDir);
+        if(filesAndDirs != null) {
+            for(File fileOrDir : filesAndDirs) {
+                if (fileOrDir.isDirectory()) {
+                    getFilesRecursively(fileOrDir);
+                } else {
+                    System.out.println("ADD: " + fileOrDir);
+                    this.filesInFolder.add(fileOrDir);
+                }
             }
         }
     }
@@ -167,6 +188,7 @@ public class FormMain extends javax.swing.JFrame {
                 );
                 if(currentExtensionLC.equals(fileExtension.toLowerCase())) {
                     nOfFiles.set(i, (short)(nOfFiles.get(i) + 1));
+                    this.codeFilesInFolder.add(file);
                 }
             }
         }
