@@ -288,14 +288,16 @@ public class FormMain extends javax.swing.JFrame {
                 deletableCodeFiles.add(currFile);
             } 
         }
-        for(File deletableCodeFile : deletableCodeFiles) {
+        deletableCodeFiles.stream().map((deletableCodeFile) -> {
             this.codeFilesInFolder.remove(deletableCodeFile);
+            return deletableCodeFile;
+        }).forEachOrdered((deletableCodeFile) -> {
             System.out.println("REMOVED: " + deletableCodeFile);
-        }
+        });
         System.out.println("FINAL FILES IN CODEFILESINFOLDER:");
-        for(File currentCodeFile : this.codeFilesInFolder) {
+        this.codeFilesInFolder.forEach((currentCodeFile) -> {
             System.out.println(currentCodeFile);
-        }
+        });
     }
     
     protected void addExtension(Extension extension) {
