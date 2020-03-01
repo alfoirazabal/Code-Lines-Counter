@@ -18,7 +18,6 @@ import javax.swing.JOptionPane;
  * @author Alfonso
  */
 public class FormMain extends javax.swing.JFrame {
-
     private final ArrayList<File> filesInFolder;
     private final ArrayList<File> codeFilesInFolder;
     private final ArrayList<Extension> currentExtensions;
@@ -96,6 +95,11 @@ public class FormMain extends javax.swing.JFrame {
         jScrollPane2.setViewportView(lstCodeFilesNumber);
 
         btnCalculateStats.setText("Calculate Stats...");
+        btnCalculateStats.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCalculateStatsActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Files Found");
 
@@ -195,6 +199,15 @@ public class FormMain extends javax.swing.JFrame {
             deleteCodeFilesWithExtension(selExt.getExtension());     
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnCalculateStatsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateStatsActionPerformed
+        FormStatistics fStats = new FormStatistics(
+                this.codeFilesInFolder,
+                this.currentExtensions
+        );
+        fStats.setLocationRelativeTo(this);
+        fStats.setVisible(true);
+    }//GEN-LAST:event_btnCalculateStatsActionPerformed
 
     private void pickFolderAndAssignFiles(String folderSource) {
         this.filesInFolder.clear();

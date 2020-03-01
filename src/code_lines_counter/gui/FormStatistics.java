@@ -5,6 +5,15 @@
  */
 package code_lines_counter.gui;
 
+import code_lines_counter.domain.Extension;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Alfonso
@@ -14,8 +23,37 @@ public class FormStatistics extends javax.swing.JFrame {
     /**
      * Creates new form FormStatistics
      */
-    public FormStatistics() {
+    
+    private final ArrayList<FilesOfExtensions> filesOfExtensions;
+    
+    public FormStatistics(
+            ArrayList<File> codeFilesInFolder,
+            ArrayList<Extension> currentExtensions
+    ) {
         initComponents();
+        
+        this.filesOfExtensions = 
+                getFilesOfExtensions(codeFilesInFolder, currentExtensions);
+        
+        int[] totalLinesData = new int[2];  //Total lines and lines of code
+        for(FilesOfExtensions fOfExt : this.filesOfExtensions) {
+            totalLinesData[0] += fOfExt.sumOfLines;
+            totalLinesData[1] += fOfExt.sumOfLinesOfCode;
+        }
+        
+        this.lblTotalLines.setText(String.valueOf(totalLinesData[0]));
+        this.lblLinesOfCode.setText(String.valueOf(totalLinesData[1]));
+        
+        Collections.sort(filesOfExtensions);
+        
+        DefaultTableModel tableModel = 
+                (DefaultTableModel)this.tableStats.getModel();
+        filesOfExtensions.forEach((fOfExt) -> {
+            Object[] newRow = {fOfExt.extension, fOfExt.getNumberOfFiles(), fOfExt.sumOfLines, fOfExt.sumOfLinesOfCode};
+            tableModel.addRow(newRow);
+            System.out.println(fOfExt);
+        });
+        
     }
 
     /**
@@ -34,7 +72,7 @@ public class FormStatistics extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableStats = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
+        btnExamineForFileType = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -42,7 +80,7 @@ public class FormStatistics extends javax.swing.JFrame {
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Total Lines of Code: ");
 
@@ -79,7 +117,7 @@ public class FormStatistics extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(tableStats);
 
-        jButton1.setText("Examine from selected File Type");
+        btnExamineForFileType.setText("Examine from selected File Type");
 
         jMenu1.setText("File");
 
@@ -123,7 +161,7 @@ public class FormStatistics extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                        .addComponent(btnExamineForFileType)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -142,15 +180,107 @@ public class FormStatistics extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton1)
+                .addComponent(btnExamineForFileType)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private ArrayList<FilesOfExtensions> getFilesOfExtensions(
+            ArrayList<File> codeFilesInFolder,
+            ArrayList<Extension> currentExtensions
+    ) {
+        ArrayList<FilesOfExtensions> fOfExt = new ArrayList<>();
+        currentExtensions.forEach((ext) -> {
+            ArrayList<File> foundFiles = new ArrayList<>();
+            codeFilesInFolder.forEach((file) -> {
+                String fileName = file.getName();
+                short fileNameLastDotPos = (short)fileName.lastIndexOf(".");
+                String fileExtensionLC = 
+                        fileName.substring(fileNameLastDotPos + 1);
+                if (fileExtensionLC.toLowerCase().equals(ext.getExtension())) {
+                    foundFiles.add(file);
+                }
+            });
+            fOfExt.add(new FilesOfExtensions(ext, foundFiles));
+        });
+        return fOfExt;
+    }
+    
+    static class FilesOfExtensions implements Comparable<FilesOfExtensions> {
+        
+        protected final Extension extension;
+        protected final ArrayList<File> files;
+        protected int sumOfLines;
+        protected int sumOfLinesOfCode;
+        
+        public FilesOfExtensions(
+                Extension extension,
+                ArrayList<File> files
+        ) {
+            this.extension = extension;
+            this.files = files;  
+            files.stream().map((file) -> 
+                    countLinesOfFile(file)).map((sumResult) -> {
+                this.sumOfLines += sumResult[0];
+                return sumResult;
+            }).forEachOrdered((sumResult) -> {
+                this.sumOfLinesOfCode += sumResult[1];
+            });
+        }
+        
+        
+        /**
+         * 
+         * @param file: The File to check number of lines of code
+         * @return int[] with position 0 indicating the total lines of the file
+         * and index 1 indicating the total lines of code.
+         */
+        private int[] countLinesOfFile(File file) {
+            int[] linesOfCode = new int[2];
+            BufferedReader reader;
+            try {
+                reader = new BufferedReader(new FileReader(file));
+                String line = reader.readLine();
+                while (line != null) {
+                    linesOfCode[0]++;
+                    line = reader.readLine();
+                    try 
+                    {
+                        if (!line.replace("\t", "").replace(" ", "").equals("")) {
+                            linesOfCode[1]++;
+                        }
+                    } 
+                    catch (NullPointerException ex) {}
+                }
+                reader.close();
+            } 
+            catch (IOException e) 
+            {
+                System.out.println("File Deleted: " + file.getName());
+            }
+            return linesOfCode;
+        }
+        
+        public int getNumberOfFiles() {
+            return files.size();
+        }
+        
+        @Override
+        public String toString() {
+            return this.extension + " - " + this.getNumberOfFiles() + " - " + this.sumOfLines + " - " + this.sumOfLinesOfCode;
+        }
+
+        @Override
+        public int compareTo(FilesOfExtensions t) {
+            return t.sumOfLinesOfCode - this.sumOfLinesOfCode;
+        }
+        
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton btnExamineForFileType;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
