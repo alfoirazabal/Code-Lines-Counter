@@ -107,7 +107,7 @@ public class FormAddExtension extends javax.swing.JFrame {
             );
         } else {
             String description = this.etxtDescription.getText();
-            Extension extension = new Extension(extensionChars, description);
+            Extension extension = new Extension(description, extensionChars);
             this.formParent.addExtension(extension);
             this.dispose();
         }
