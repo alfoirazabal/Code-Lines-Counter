@@ -5,6 +5,8 @@
  */
 package code_lines_counter;
 
+import code_lines_counter.gui.FormMain;
+
 /**
  *
  * @author Alfonso
@@ -15,7 +17,10 @@ public class CodeLinesCounter {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here        
+        // TODO code application logic here      
+        FormMain formMain = new FormMain();
+        formMain.setLocationRelativeTo(null);
+        formMain.setVisible(true);
     }
     
 }
