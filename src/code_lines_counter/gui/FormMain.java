@@ -8,8 +8,10 @@ package code_lines_counter.gui;
 import code_lines_counter.domain.Extension;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -19,7 +21,7 @@ public class FormMain extends javax.swing.JFrame {
 
     private final ArrayList<File> filesInFolder;
     private final ArrayList<File> codeFilesInFolder;
-    private ArrayList<Extension> currentExtensions;
+    private final ArrayList<Extension> currentExtensions;
     
     /**
      * Creates new form FormMain
@@ -50,11 +52,11 @@ public class FormMain extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         lstCodeExtensions = new javax.swing.JList<>();
         btnAdd = new javax.swing.JButton();
-        btnModify = new javax.swing.JButton();
         btnDelete = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         lstCodeFilesNumber = new javax.swing.JList<>();
         btnCalculateStats = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -69,17 +71,33 @@ public class FormMain extends javax.swing.JFrame {
 
         jLabel1.setText("Choose Extensions:");
 
+        lstCodeExtensions.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                lstCodeExtensionsValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(lstCodeExtensions);
 
         btnAdd.setText("Add");
-
-        btnModify.setText("Modify");
+        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddActionPerformed(evt);
+            }
+        });
 
         btnDelete.setText("Delete");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
 
+        lstCodeFilesNumber.setEnabled(false);
         jScrollPane2.setViewportView(lstCodeFilesNumber);
 
         btnCalculateStats.setText("Calculate Stats...");
+
+        jLabel2.setText("Files Found");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -93,19 +111,18 @@ public class FormMain extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(btnSelectCodeFolder)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblCodeFolder))
-                            .addComponent(jLabel1)
+                                .addComponent(lblCodeFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(btnAdd)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnModify)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnDelete)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnAdd)
+                                    .addComponent(jLabel1))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnDelete, javax.swing.GroupLayout.Alignment.TRAILING)))))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(btnCalculateStats, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -118,7 +135,9 @@ public class FormMain extends javax.swing.JFrame {
                     .addComponent(btnSelectCodeFolder)
                     .addComponent(lblCodeFolder))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
@@ -126,7 +145,6 @@ public class FormMain extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAdd)
-                    .addComponent(btnModify)
                     .addComponent(btnDelete))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnCalculateStats)
@@ -147,17 +165,44 @@ public class FormMain extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnSelectCodeFolderActionPerformed
 
+    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        FormAddExtension fAddExt = new FormAddExtension(this);
+        fAddExt.setLocationRelativeTo(this);
+        fAddExt.setVisible(true);
+    }//GEN-LAST:event_btnAddActionPerformed
+
+    private void lstCodeExtensionsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_lstCodeExtensionsValueChanged
+        short selIndex = (short)this.lstCodeExtensions.getSelectedIndex();
+        this.lstCodeFilesNumber.setSelectedIndex(selIndex);
+    }//GEN-LAST:event_lstCodeExtensionsValueChanged
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        Extension selExt = this.lstCodeExtensions.getSelectedValue();
+        int diagRes = JOptionPane.showConfirmDialog(
+                this,
+                "Sure you want to delete '" + selExt.getExtension() + "'?",
+                "Confirmation",
+                JOptionPane.YES_NO_OPTION
+        );
+        System.out.println("DIAGRES: " + diagRes);
+        if (diagRes == 0) {
+            System.out.println("ENTERED");
+            this.currentExtensions.remove(selExt);
+            short lstIndex = (short)this.lstCodeExtensions.getSelectedIndex();
+            System.out.println("LSTSELINDEX: " + lstIndex);
+            ((DefaultListModel)(this.lstCodeExtensions.getModel())).remove(lstIndex);
+            ((DefaultListModel)(this.lstCodeFilesNumber.getModel())).remove(lstIndex);
+            deleteCodeFilesWithExtension(selExt.getExtension());     
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
     private void pickFolderAndAssignFiles(String folderSource) {
         this.filesInFolder.clear();
         this.codeFilesInFolder.clear();
         getFilesRecursively(new File(folderSource));
-        this.currentExtensions = 
-                Extension.getFoundExtensionsInFiles(this.filesInFolder);
-        DefaultListModel fifListModel = new DefaultListModel();
-        fifListModel.addAll(this.currentExtensions);
-        this.lstCodeExtensions.setModel(fifListModel);
+        addNonExistentDefaultCurrentExtensions();
+        this.displayFileExtensionsAndNOfFiles();
         this.lblCodeFolder.setText(folderSource);
-        addNOfFilesForEachExtension();
     }
     
     private void getFilesRecursively(File directory) {
@@ -168,14 +213,16 @@ public class FormMain extends javax.swing.JFrame {
                 if (fileOrDir.isDirectory()) {
                     getFilesRecursively(fileOrDir);
                 } else {
-                    System.out.println("ADD: " + fileOrDir);
                     this.filesInFolder.add(fileOrDir);
                 }
             }
         }
     }
     
-    private void addNOfFilesForEachExtension() {
+    protected void displayFileExtensionsAndNOfFiles() {
+        DefaultListModel fifListModel = new DefaultListModel();
+        fifListModel.addAll(this.currentExtensions);
+        this.lstCodeExtensions.setModel(fifListModel);
         ArrayList<Short> nOfFiles = new ArrayList<>();
         for(short i = 0 ; i < this.currentExtensions.size() ; i++) {
             String currentExtensionLC = 
@@ -188,26 +235,86 @@ public class FormMain extends javax.swing.JFrame {
                 );
                 if(currentExtensionLC.equals(fileExtension.toLowerCase())) {
                     nOfFiles.set(i, (short)(nOfFiles.get(i) + 1));
-                    this.codeFilesInFolder.add(file);
+                    if (!this.codeFilesInFolder.contains(file)) {
+                        this.codeFilesInFolder.add(file);
+                    }
                 }
             }
         }
         DefaultListModel lcfnListModel = new DefaultListModel();
         lcfnListModel.addAll(nOfFiles);
         this.lstCodeFilesNumber.setModel(lcfnListModel);
+        System.out.println("---------PRINTING CFIF---------");
+        this.codeFilesInFolder.forEach((cf) -> {
+            System.out.println(cf.getName());
+        });
+        System.out.println("---------ENDED CFIF PRINTING---------");
+    }
+    
+    /**
+     * Checks through current extensions in list, and returns only the
+     * default extensions that are not already in the list, and have
+     * been found in the files of the current folder
+     */
+    private void addNonExistentDefaultCurrentExtensions() {
+        ArrayList<Extension> newFoundExtensions = 
+                Extension.getFoundExtensionsInFiles(this.filesInFolder);
+        newFoundExtensions.forEach((nfExt) -> {
+            Iterator<Extension> itCExt = this.currentExtensions.iterator();
+            boolean foundInCExt = false;
+            while(!foundInCExt && itCExt.hasNext()) {
+                Extension currentCurrExtension = itCExt.next();
+                String currExt = currentCurrExtension.getExtension();
+                if(currExt.toLowerCase().equals(
+                        nfExt.getExtension().toLowerCase()
+                )) {
+                    foundInCExt = true;
+                }
+            }
+            if (!foundInCExt) {
+                this.currentExtensions.add(nfExt);
+            }
+        });
+    }
+    
+    private void deleteCodeFilesWithExtension(String extension) {
+        ArrayList<File> deletableCodeFiles = new ArrayList<>();
+        Iterator<File> itCodeFiles = this.codeFilesInFolder.iterator();
+        while(itCodeFiles.hasNext()) {
+            File currFile = itCodeFiles.next();
+            String fName = currFile.getName();
+            String ext = fName.substring(fName.lastIndexOf(".") + 1);
+            if(ext.toLowerCase().equals(extension.toLowerCase())) {
+                deletableCodeFiles.add(currFile);
+            } 
+        }
+        for(File deletableCodeFile : deletableCodeFiles) {
+            this.codeFilesInFolder.remove(deletableCodeFile);
+            System.out.println("REMOVED: " + deletableCodeFile);
+        }
+        System.out.println("FINAL FILES IN CODEFILESINFOLDER:");
+        for(File currentCodeFile : this.codeFilesInFolder) {
+            System.out.println(currentCodeFile);
+        }
+    }
+    
+    protected void addExtension(Extension extension) {
+        this.currentExtensions.add(extension);
+        displayFileExtensionsAndNOfFiles();
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnCalculateStats;
     private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnModify;
     private javax.swing.JButton btnSelectCodeFolder;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblCodeFolder;
-    private javax.swing.JList<String> lstCodeExtensions;
+    private javax.swing.JList<Extension> lstCodeExtensions;
     private javax.swing.JList<String> lstCodeFilesNumber;
     // End of variables declaration//GEN-END:variables
+
 }
