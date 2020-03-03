@@ -49,7 +49,13 @@ public class FormStatistics extends javax.swing.JFrame {
         DefaultTableModel tableModel = 
                 (DefaultTableModel)this.tableStats.getModel();
         filesOfExtensions.forEach((fOfExt) -> {
-            Object[] newRow = {fOfExt.extension, fOfExt.getNumberOfFiles(), fOfExt.sumOfLines, fOfExt.sumOfLinesOfCode};
+            Object[] newRow = {
+                fOfExt.extension.getExtension().toLowerCase(),
+                fOfExt.getNumberOfFiles(),
+                fOfExt.sumOfLines,
+                fOfExt.sumOfLinesOfCode + " - " + 
+                        fOfExt.getCodeToLinesPercentage() + "%", 
+                fOfExt.avgLengthOfCodeLine};
             tableModel.addRow(newRow);
             System.out.println(fOfExt);
         });
@@ -97,14 +103,14 @@ public class FormStatistics extends javax.swing.JFrame {
 
             },
             new String [] {
-                "File Type", "Number of Files", "Total Lines", "Total Lines of Code"
+                "File Type", "Number of Files", "Total Lines", "Total Lines of Code", "Average Length of Code"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class
+                java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -145,7 +151,7 @@ public class FormStatistics extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -214,31 +220,35 @@ public class FormStatistics extends javax.swing.JFrame {
         protected final ArrayList<File> files;
         protected int sumOfLines;
         protected int sumOfLinesOfCode;
+        protected int avgLengthOfCodeLine;
         
         public FilesOfExtensions(
                 Extension extension,
                 ArrayList<File> files
         ) {
             this.extension = extension;
-            this.files = files;  
-            files.stream().map((file) -> 
-                    countLinesOfFile(file)).map((sumResult) -> {
-                this.sumOfLines += sumResult[0];
-                return sumResult;
-            }).forEachOrdered((sumResult) -> {
-                this.sumOfLinesOfCode += sumResult[1];
-            });
+            this.files = files;
+            int sumAvgLengthOfCodeLines = 0;
+            for(File file : files) {
+                int[] linesData = countLinesOfFile(file);
+                this.sumOfLines += linesData[0];
+                this.sumOfLinesOfCode += linesData[1];
+                sumAvgLengthOfCodeLines += linesData[2];
+            }
+            this.avgLengthOfCodeLine = sumAvgLengthOfCodeLines / files.size();
         }
         
         
         /**
          * 
          * @param file: The File to check number of lines of code
-         * @return int[] with position 0 indicating the total lines of the file
-         * and index 1 indicating the total lines of code.
+         * @return int[] with position 0 indicating the total lines of the file,
+         * index 1 indicating the total lines of code, and index 2 indicating
+         * the average length of a code line
          */
         private int[] countLinesOfFile(File file) {
-            int[] linesOfCode = new int[2];
+            int[] linesOfCode = new int[3];
+            int totalCodeLength = 0;
             BufferedReader reader;
             try {
                 reader = new BufferedReader(new FileReader(file));
@@ -250,11 +260,13 @@ public class FormStatistics extends javax.swing.JFrame {
                     {
                         if (!line.replace("\t", "").replace(" ", "").equals("")) {
                             linesOfCode[1]++;
+                            totalCodeLength += line.length();
                         }
                     } 
                     catch (NullPointerException ex) {}
                 }
                 reader.close();
+                linesOfCode[2] = totalCodeLength / linesOfCode[1];
             } 
             catch (IOException e) 
             {
@@ -263,13 +275,19 @@ public class FormStatistics extends javax.swing.JFrame {
             return linesOfCode;
         }
         
-        public int getNumberOfFiles() {
+        protected int getNumberOfFiles() {
             return files.size();
+        }
+        
+        protected int getCodeToLinesPercentage() {
+            return (int)(((float)this.sumOfLinesOfCode / (float)this.sumOfLines) * 100);
         }
         
         @Override
         public String toString() {
-            return this.extension + " - " + this.getNumberOfFiles() + " - " + this.sumOfLines + " - " + this.sumOfLinesOfCode;
+            return this.extension + " - " + this.getNumberOfFiles() + " - " + 
+                    this.sumOfLines + " - " + this.sumOfLinesOfCode + " - " +
+                    this.avgLengthOfCodeLine;
         }
 
         @Override
